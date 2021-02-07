@@ -14,35 +14,6 @@ let windowHeight = 400;
 let termSlider;
 let wave = "square";
 
-class RotCircle {
-    constructor(radius, freq) {
-        this.radius = radius;
-        this.x = 0;
-        this.y = 0;
-        this.x_p = radius;
-        this.y_p = 0;
-        this.freq = freq;
-    }
-
-    update(x, y, t) {
-        this.x = x;
-        this.y = y;
-        this.x_p = this.x + this.radius * Math.cos(t * this.freq);
-        this.y_p = this.y - this.radius * Math.sin(t * this.freq);
-
-        return [this.x_p, this.y_p];
-    }
-
-    show() {
-        stroke(255, 100);
-        noFill();
-        ellipse(this.x, this.y, 2 * this.radius);
-        stroke(255);
-        line(this.x, this.y, this.x_p, this.y_p);
-    }
-}
-
-
 function setup() {
     canvas = createCanvas(windowWidth, windowHeight);
 
@@ -64,44 +35,34 @@ function setup() {
     revSawButton.mousePressed(update2revSaw);
 }
 
-
-
 let time = 0;
 let waveCache = [];
-let freqArray = [];
 
-let c = getCoeff_sin(1);
-freqArray[0] = new RotCircle(ogRadius * c, 1);
-freqArray[0].update(200, 200, 0);
-
+// i assume x and y return the value of where the "center of translation" is
 function draw() {
 
     termValP.html("# of terms: " + termSlider.value())
 
     background(0);
+    translate(centerX, centerY);
 
     let sVal = termSlider.value();
 
-    if (sVal > freqArray.length) {
-        for (let term = freqArray.length + 1; term <= sVal; ++term) {
-            let c = getCoeff_sin(term);
-            freqArray.push(new RotCircle(ogRadius * c, term));
-        }
-    }
-    else {
-        for (let term = (freqArray.length - sVal); term > 0; --term) {
-            freqArray.pop();
-        }
-    }
+    for (let term = 1; term <= sVal; ++term) {
+        let radius = getCoeff_sin(term);
+        let x_p = radius * Math.cos(t * term);
+        let y_p = - radius * Math.sin(t * term);
 
-    prevPos = [centerX, centerY];
+        stroke(255, 100);
+        noFill();
+        ellipse(0, 0, 2 * radius);
+        stroke(255);
+        line(0, 0, x_p, y_p);
 
-    for (let i = 0; i < freqArray.length; ++i) {
-        prevPos = freqArray[i].update(prevPos[0], prevPos[1], time);
-        freqArray[i].show();
+        translate(x_p, y_p);
     }
     
-    waveCache.unshift(freqArray[freqArray.length - 1].y_p);
+    waveCache.unshift(y);
 
     beginShape();
     for (let i = 0; i < waveCache.length; ++i) {
@@ -109,7 +70,7 @@ function draw() {
     }
     endShape();
 
-    line(freqArray[sVal - 1].x_p, waveCache[0], centerX + ogRadius + 150, waveCache[0]);
+    line(x, waveCache[0], centerX + ogRadius + 150, waveCache[0]);
 
     if (waveCache.length > 400) {
         waveCache.pop();
@@ -148,7 +109,6 @@ function update2revSaw() {
     }
 }
 
-
 function getCoeff_sin(iteration) {
     switch (wave) {
         case "square":
@@ -178,51 +138,3 @@ function getCoeff_sin(iteration) {
             }
     }
 }
-
-var coeff_dict =
-[
-    {
-        name: "square",
-        coeffs_cos: [0, 0, 0, 0, 0],                        //start from coeff 0
-        coeffs_sin: [4/(Math.PI), 0, 4/(3*Math.PI), 0, 4/(5*Math.PI)]      //start from coeff 1
-    },
-    {
-        name: "triangle",
-        coeffs_cos: [0, 0, 0, 0, 0],
-        coeffs_sin: [8/(Math.pow(Math.PI, 2)), 0, 8/(Math.pow(Math.PI, 2)) * (-1/9), 0, 8/(Math.pow(Math.PI, 2)) * (1/25)]
-    },
-    {
-        name: "reverse sawtooth",
-        coeffs_cos: [0, 0, 0, 0, 0],
-        coeffs_sin: [-(2/Math.PI), 1/Math.PI, -(2/(3*Math.PI)), 2/(4*Math.PI), -(2/(5*Math.PI))]
-    }
-];
-
-/* function getCoeff_sin(wavestr, iteration) {             //works: 02.02 - 01:34
-    if (iteration > numberOfTerms || iteration > 5) {
-        throw "number of iterations too high";
-    }
-    for (let i = 0; i < coeff_dict.length; ++i) {
-        if (coeff_dict[i].name === wavestr) {
-            return coeff_dict[i].coeffs_sin[(iteration -1)];
-        }
-    }
-} */
-
-/*
-function fourierTerm(posX, posY, iteration, t) {
-    if (iteration <= numberOfTerms) {
-        background(0);
-        translate(posX, posY);
-        stroke(255);
-        noFill();
-        var c = getCoeff_sin(wave, iteration);
-        var adaptedRadius = ogRadius * c;
-        circle(0, 0, 2 * adaptedRadius);
-        var newX = adaptedRadius * Math.sin(t * iteration);
-        var newY = adaptedRadius * Math.cos(t * iteration);
-        fourierTerm(newX, newY, iteration + 1, t);
-    }
-    else {return 0;};
-}
-*/
