@@ -43,15 +43,17 @@ function draw() {
 
     termValP.html("# of terms: " + termSlider.value())
 
+    let x = centerX;
+    let y = centerY;
     background(0);
-    translate(centerX, centerY);
+    translate(x, y);
 
     let sVal = termSlider.value();
 
     for (let term = 1; term <= sVal; ++term) {
         let radius = getCoeff_sin(term);
-        let x_p = radius * Math.cos(t * term);
-        let y_p = - radius * Math.sin(t * term);
+        let x_p = radius * Math.cos(time * term);
+        let y_p = - radius * Math.sin(time * term);
 
         stroke(255, 100);
         noFill();
