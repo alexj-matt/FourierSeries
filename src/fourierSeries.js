@@ -43,36 +43,39 @@ function draw() {
 
     termValP.html("# of terms: " + termSlider.value())
 
-    let x = centerX;
-    let y = centerY;
     background(0);
-    translate(x, y);
+    translate(centerX, centerY);
+    let x = 0;
+    let y = 0;
+    let x_p = 0;
+    let y_p = 0;
 
     let sVal = termSlider.value();
 
     for (let term = 1; term <= sVal; ++term) {
-        let radius = getCoeff_sin(term);
-        let x_p = radius * Math.cos(time * term);
-        let y_p = - radius * Math.sin(time * term);
+        let radius = ogRadius * getCoeff_sin(term);
+        x += radius * Math.cos(time * term);
+        y += - radius * Math.sin(time * term);
 
         stroke(255, 100);
         noFill();
-        ellipse(0, 0, 2 * radius);
+        ellipse(x_p, y_p, 2 * radius);
         stroke(255);
-        line(0, 0, x_p, y_p);
-
-        translate(x_p, y_p);
+        line(x_p, y_p, x, y);
+        
+        x_p = x;
+        y_p = y;
     }
-    
+
     waveCache.unshift(y);
 
     beginShape();
     for (let i = 0; i < waveCache.length; ++i) {
-        vertex(centerX + ogRadius + 150 + i, waveCache[i]);
+        vertex(ogRadius + 150 + i, waveCache[i]);
     }
     endShape();
 
-    line(x, waveCache[0], centerX + ogRadius + 150, waveCache[0]);
+    line(x, waveCache[0], ogRadius + 150, waveCache[0]);
 
     if (waveCache.length > 400) {
         waveCache.pop();
@@ -83,32 +86,14 @@ function draw() {
 
 function update2square() {
     wave = "square";
-    freqArray = [];
-
-    for (let term = 1; term <= termSlider.value(); ++term) {
-        let c = getCoeff_sin(term);
-        freqArray.push(new RotCircle(ogRadius * c, term));
-    }
 }
 
 function update2triangle() {
     wave = "triangle";
-    freqArray = []
-
-    for (let term = 1; term <= termSlider.value(); ++term) {
-        let c = getCoeff_sin(term);
-        freqArray.push(new RotCircle(ogRadius * c, term));
-    }
 }
 
 function update2revSaw() {
     wave = "reverse sawtooth";
-    freqArray = []
-
-    for (let term = 1; term <= termSlider.value(); ++term) {
-        let c = getCoeff_sin(term);
-        freqArray.push(new RotCircle(ogRadius * c, term));
-    }
 }
 
 function getCoeff_sin(iteration) {
